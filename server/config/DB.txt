@@ -23,13 +23,6 @@ CREATE TABLE answers (
 	answer TEXT NOT NULL
 );
 
-CREATE TABLE questions_closure (
-	ancestor_id INTEGER NOT NULL REFERENCES questions(id),
-	descendant_id INTEGER NOT NULL REFERENCES questions(id),
-	depth INTEGER NOT NULL,
-	PRIMARY KEY (ancestor_id, descendant_id)
-);
-
 CREATE TABLE "session" (
   "sid" varchar NOT NULL COLLATE "default",
   "sess" json NOT NULL,

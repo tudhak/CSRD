@@ -19,18 +19,17 @@ const Question = {
   async getSubtopics(topicId) {
     const query = `WITH RankedSubtopics AS (
                    SELECT
+                   q.topic,
                    q.subtopic,
                    q.label,
                    q.id,
                    ROW_NUMBER() OVER (PARTITION BY q.subtopic ORDER BY q.level ASC, q.id ASC) AS rn
                    FROM questions q
-                   INNER JOIN questions_closure qc ON q.id = qc.descendant_id
-                   INNER JOIN questions q_ancestor ON qc.ancestor_id = q_ancestor.id AND q_ancestor.topic = $1
                    )
                    SELECT subtopic, label
                    FROM RankedSubtopics
-                   WHERE rn = 1
-                   ORDER BY id ASC;`;
+                   WHERE topic = $1 AND rn = 1
+                   ORDER BY id ASC;;`;
     try {
       const { rows } = await pool.query(query, [topicId]);
       return rows;

@@ -16,81 +16,31 @@ class TreeNode {
 class Tree {
   constructor() {
     this.nodes = [];
-  }
-
-  // Helper function to perform DFS and find the best matching parent node
-  dfsFindParent(
-    node,
-    subtopic,
-    level,
-    bestMatch = { node: null, levelDiff: Infinity }
-  ) {
-    // Checking if current node matches the criteria
-    if (node.subtopic === subtopic && node.level < level) {
-      const levelDiff = level - node.level;
-      if (levelDiff < bestMatch.levelDiff) {
-        bestMatch.node = node;
-        bestMatch.levelDiff = levelDiff;
-        // Early termination if direct parent is found
-        if (levelDiff === 1) return bestMatch.node;
-      }
-    }
-    // Checking recursively in children nodes to check if one child node matches the criteria
-    for (const child of [...node.children].reverse()) {
-      const result = this.dfsFindParent(child, subtopic, level, bestMatch);
-      // Early return if a direct parent has been found in the subtree
-      if (result && bestMatch.levelDiff === 1) return result;
-    }
-    return bestMatch.node;
-  }
-
-  // Function to initiate the DFS search from the root nodes
-  findParentNode(subtopic, level) {
-    let bestMatch = { node: null, levelDiff: Infinity };
-    for (const rootNode of [...this.nodes].reverse()) {
-      const match = this.dfsFindParent(rootNode, subtopic, level, bestMatch);
-      if (match) bestMatch = { node: match, levelDiff: level - match.level };
-    }
-    return bestMatch.node;
-  }
-
-  // Helper function to determine if a node can be added at the root level
-  isRootLevelNode(level, subtopic) {
-    const minLevelSubTopic = this.getMinLevelForSubTopic(subtopic);
-    return (
-      level === 1 ||
-      !this.nodes.some((node) => node.subtopic === subtopic) ||
-      level === minLevelSubTopic
-    );
-  }
-
-  // Helper function to get the minimum level for a given topic
-  getMinLevelForSubTopic(subtopic) {
-    const levels = this.nodes
-      .filter((node) => node.subtopic === subtopic)
-      .map((node) => node.level);
-    return levels.length ? Math.min(...levels) : Infinity;
+    this.stack = [];
   }
 
   // Function to insert nodes into the correct position of the tree based on level and topic
+  // Using stack
   insertNode(level, topic, subtopic, label) {
     const newNode = new TreeNode(topic, subtopic, label, level);
 
-    // Check if the node can be directly added to the root level
-    if (this.isRootLevelNode(level, subtopic)) {
-      this.nodes.push(newNode);
-      return;
+    while (
+      this.stack.length > 0 &&
+      this.stack[this.stack.length - 1].level >= level
+    ) {
+      this.stack.pop();
     }
 
-    // Attempt to find a suitable parent node
-    const parent = this.findParentNode(subtopic, level);
-    if (parent) {
-      parent.children.push(newNode); // Insert as a child of the found parent
+    if (
+      this.stack.length === 0 ||
+      this.stack[this.stack.length - 1].subtopic !== subtopic
+    ) {
+      this.nodes.push(newNode);
     } else {
-      console.error(
-        `No suitable parent found for topic: ${topic}, subtopic: ${subtopic}, label: ${label}, level: ${level}.`
-      );
+      this.stack[this.stack.length - 1].children.push(newNode);
     }
+
+    this.stack.push(newNode);
   }
 
   // Function to populate the tree from CSV data

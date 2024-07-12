@@ -1,0 +1,40 @@
+Creating PostgreSQL tables
+
+CREATE TABLE questions (
+	id SERIAL PRIMARY KEY,
+	topic VARCHAR NOT NULL,
+	subtopic VARCHAR NOT NULL,
+	label TEXT NOT NULL,
+	level INTEGER NOT NULL
+);
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR UNIQUE NOT NULL,
+  password VARCHAR NOT NULL,
+  firstname VARCHAR,
+  lastname VARCHAR
+);
+
+CREATE TABLE answers (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER REFERENCES users(id),
+	question_id INTEGER REFERENCES questions(id),
+	answer TEXT NOT NULL
+);
+
+CREATE TABLE questions_closure (
+	ancestor_id INTEGER NOT NULL REFERENCES questions(id),
+	descendant_id INTEGER NOT NULL REFERENCES questions(id),
+	depth INTEGER NOT NULL,
+	PRIMARY KEY (ancestor_id, descendant_id)
+);
+
+CREATE TABLE "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+  "sess" json NOT NULL,
+  "expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+CREATE INDEX "IDX_session_expire" ON "session" ("expire");
